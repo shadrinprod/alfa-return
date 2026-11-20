@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>Возврат из Alfa ID</title>
+<style>
+:root{color-scheme:light dark}
+body{margin:0;min-height:100vh;display:grid;place-items:center;font:16px/1.45 -apple-system,BlinkMacSystemFont,sans-serif;background:#eef0f4;color:#111}
+@media (prefers-color-scheme:dark){body{background:#0f1012;color:#f2f2f2}}
+main{width:min(380px,calc(100vw - 32px));text-align:center}
+p{opacity:.75}
+</style>
+</head>
+<body>
+<main>
+<h1>Возвращаемся в панель…</h1>
+<p>Эта страница ничего не хранит и никуда не отправляет. Она только передаёт код подтверждения Альфы в панель на вашем Mac.</p>
+<p id="msg"></p>
+</main>
+<script>
+// Alfa ID возвращает сюда ?code=…&state=… после согласия владельца счёта.
+// Страница сразу переадресует их в локальную панель на этом же Mac (127.0.0.1) и ничего не сохраняет.
+(function(){
+  var q = new URLSearchParams(location.search);
+  var code = q.get('code'), state = q.get('state'), error = q.get('error');
+  var target = 'http://127.0.0.1:54118/alfa/return';
+  if (error) { document.getElementById('msg').textContent = 'Альфа вернула отказ: ' + error; return; }
+  if (!code || !state || !/^[A-Za-z0-9._~-]{8,512}$/.test(code) || !/^[A-Za-z0-9_-]{16,128}$/.test(state)) {
+    document.getElementById('msg').textContent = 'Нет кода подтверждения. Начните подключение заново из панели.'; return;
+  }
+  history.replaceState(null, '', location.pathname);
+  location.replace(target + '?code=' + encodeURIComponent(code) + '&state=' + encodeURIComponent(state));
+})();
+</script>
+</body>
+</html>
